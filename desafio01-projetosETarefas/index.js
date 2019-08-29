@@ -4,10 +4,23 @@ const server = express()
 
 server.use(express.json())
 
-let numeroDeRequi = 0
+/**
+ * A variável `numeroDeRequi` está como `let` porque vai sofrer mutação.
+ * A variável `projects` pode ser `const` porque um `array` pode receber 
+ * dições ou exclusões mesmo sendo uma constante.
+ */
 
+let numeroDeRequi = 0
 const projects = []
 // { id: '1', title: 'Novo projeto', tasks: [] }
+
+/**
+ * Middlewares é a base de toda a plicação, uma função que recebe os 
+ * parametros req, res e outros e faz alguma coisa dentro da aplicação
+ * manipulando os resultados de alguma forma.
+ * criou-se um middleware de log da aplicação, para saber todas as rotas
+ * chamadas dentro do insomnia
+ */
 
 server.use((req, res, next) => {
   console.time('Request')
@@ -18,6 +31,8 @@ server.use((req, res, next) => {
 
   console.timeEnd('Request')
 })
+
+// middleware local para verificar a existência das informações pasadas
 
 function checaProjetoExistente(req, res, next) {
   const { id } = req.params
@@ -30,6 +45,10 @@ function checaProjetoExistente(req, res, next) {
   return next()
 }
 
+/**
+ * middleware que dá log no número de requisições
+ */
+
 function quantasRequiFeitas (req, res, next) {
   numeroDeRequi++
   
@@ -37,6 +56,10 @@ function quantasRequiFeitas (req, res, next) {
 
   return next()
 }
+
+/**
+ * Projetos
+ */
 
 server.use(quantasRequiFeitas)
 
@@ -92,6 +115,10 @@ server.delete('/projects/:id', checaProjetoExistente, (req, res) => {
 
   return res.send()
 })
+
+/**
+ * tasks
+ */
 
 server.post('/projects/:id/tasks', checaProjetoExistente, (req, res) => {
   const { id } = req.params
