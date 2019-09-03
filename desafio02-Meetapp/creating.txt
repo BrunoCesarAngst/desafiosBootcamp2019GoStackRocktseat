@@ -1,0 +1,9 @@
+mkdir meetapp - diretório da aplicação
+yarn init -y
+yarn add express
+touch .gitignore
+echo 'node_modules' >> .gitignore
+mkdir src - todo o código que será manipulado dentro desse diretório
+dentro da pasta src - app.js, server.js e routes.js
+no arquivo app.js configura-se o servidor express e utizamos classes
+pois, faz todo o sentido por estarmos dando nome as coisas
