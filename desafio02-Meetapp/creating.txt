@@ -7,3 +7,98 @@ mkdir src - todo o código que será manipulado dentro desse diretório
 dentro da pasta src - app.js, server.js e routes.js
 no arquivo app.js configura-se o servidor express e utizamos classes
 pois, faz todo o sentido por estarmos dando nome as coisas
+
+voltando do arquivo 'routes.js', vamos fazer umas alterações na configuração do sistema
+uma delas é usar a sintaxe de import e export dos modules, aplicando um sistema novo, substituindo o require do commonjs. Para isso instalaremos os alguns modulos 'yarn add sucrase nodemon -D', o -D faz com que essas instalação seja em dependência de desenvovimento. Após a instalação pode fazer as substuições na parte de importação e exportação da aplicação.
+se tentarmos rodar a aplicação novamente, após, as alterações dará um erro, pois, não há o reconhecimento do import, então trocamos para rodar a aplicação com sucrase que pode ser feito rodando no terminal 'yarn sucrase-node src/index.js', mas vamos deixar essa tarefa automática com o 'nodemon', para isso criamos um script dentro do arquivo package.json apos MIT
+"scripts":{
+    "dev":"nodemon src/server.js"
+  },
+mas só isso não é o suficiente temos que criar um arquivo de configuração o nodemon.json na raiz do projeto e nesse arquivo criamos um objeto assim
+{
+  isso é uma propriedade
+  "execMap":{
+    que fala para qual extensão de arquivo se execute tal ferramente
+    "js":"sucrase-node"
+
+  }
+}
+assim quando rodado yarn dev, rodará tranquilo.
+
+agora configuramos o Docker para criar o serviço de banco de dados postgres indo no Dockerhub para buscar a configuração ideal nesse caso somente um com password como por exemplo
+'docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres'
+rodo essecomando para ver portas disponível 'netstat -anp | grep :5433'
+então rodaremos
+'sudo docker run --name meetapp -e POSTGRES_PASSWORD=docker -p 5433:5432 -d postgres'
+e através do postbird fazemos a conecção com o banco de dados criamos uma nova database no caso meetapp, após isso criar tabelas vai ser feito através da aplicação
+
+arquitetura MVC
+model é a abstração do banco de dados - não tem responsabilidade com o modelo de negócios da aplicação.
+
+controller é o ponto de entrada das requisições da aplicação, as rotas que estão associadas com método controller, incluindo a maior parte da regras de negócios e conforme a aplicação cresce podemos isolar as regras.(patners)
+
+view é o retorno ao cliente, se não utiliza API REST fazemos uso de HTML, nesse caso faremos uso do view com retorno de JSON do controller, para depois manipular ReactJS ou React Native!
+
+a face de um controller
+- classes
+- sempre retorna um JSON
+- não pode chamar outro controller ou método de um outro controller ou dele mesmo.
+- quando criar um novo controller, quando se tem uma nova entidade e entidade não é mesma coisa que model, mas cada model vai ter o seu próprio controller, mas podemos ter controller que não tenham model, uma autenticação, tem model de usuário e esse se autentica, através de uma cessão, que não será um user.controller, pois, não estarei criando um usário e sim uma cessão, para autenticação.
+- class UserController {
+  index() {  } //lista de usuários
+  show() {  } //exibi um usuário
+  store() {  } //cadastar usuário
+  update() {  } //alterar usuário
+  delete() {  } //remover usuário
+}
+ configurando umas ferramentas para padronizar o código
+ - yarn add eslint - D como padrão de desenvolvimento
+ - yarn eslint --init
+  seleciono:
+  - To check syntax, find problems, and enforce code style
+  - JavaScript modules (import/export)
+  - None of these
+  - Does your project use TypeScript? (y/N) N
+  - Where does your code run? com teclado de espaço desseleciono o browser e seleciono o node
+  - Use a popular style guide
+  - Airbnb (https://github.com/airbnb/javascript)
+  - JavaScript
+  - yes
+  Essa instalação foi feita por npm e não por yarn para alterar isso apagamos o arquivo package-lock.json e rodamos o comando yarn assim: rm package-lock.json e yarn
+  nesse processo foi criado um arquivo .eslintrc.js e nele configuraremos o nosso lint de código
+  verifico se está instado a extenção ESLint
+  e no arquivo .eslintrc.js e incluo no rules
+    "prettier/prettier": "error",
+    "class-methods-use-this": "off",
+    "no-param-reassign": "off",
+    "camelcase": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
+"prettier/prettier": "error", para retornar erro nos problemas
+"class-methods-use-this": "off", não obriga o uso do termo this nos methods
+"no-param-reassign": "off", poder receber parametro e alterar parametro, para poder manipular aguns dados no sequelize
+"camelcase": "off", poder usar undescore
+"no-unused-vars": ["error", { "argsIgnorePattern": "next" }], poder declarar a variável next, mesmo não usando-a
+
+apos instalaremos, yarn add prettier eslint-config-prettier eslint-plugin-prettier -D e no arquivo .eslintrc.js incuimos o seguinte
+extends: [
+    'airbnb-base',
+    'prettier'
+  ],
+  plugins: ['prettier'],
+essas alterações faram uma coisas que nem queremos, para corrigir criamos um arquivo touch .prettierrc com essa configuração:
+{
+  "singleQuote": true,
+  "trailingComma": "es5"
+}
+e então criamos um fix de correção de padrão assim
+yarn eslint --fix src --ext .js
+
+configurando o sequelize e estrutara das pastas
+na pasta src
+  - criamos a pasta config (configurações da aplicação) e dentro o arquivo database.js (as credenciais para acessar o bando de dados)
+  - criamos a pasta database (tudo que está relacionado a database, fora a configuração de conecção) com uma pasta migrations
+  - criamos a pasta app (os códigos que envolvem as regras de negócios ou lógica) com as pastas controllers e models
+
+instalaremos yarn add sequelize e yarn add sequelize-cli -D
+
+criamos o arquivo touch .sequelizerc muda para sintaxe JavaScript, esse é o arquivo que exportam os caminhos onde estão as pastas criadas anteriormente, então vamos para o arquivo .sequelizerc.
